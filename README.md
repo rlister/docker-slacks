@@ -30,7 +30,7 @@ container can read docker daemon events.
 docker run \
   -h $(hostname) \
   -e WEBHOOK=<url> \
-  -v /var/run/docker.sock:/var/run/docker.sock
+  -v /var/run/docker.sock:/var/run/docker.sock \
   rlister/docker-slacks
 ```
 
