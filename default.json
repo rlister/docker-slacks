@@ -1,0 +1,15 @@
+{
+  "attachments": [
+    {
+      "text": "*{{.Hostname}}* {{.Event.From}} {{.Event.Status}} _{{.Timestamp.Format "Jan _2 15:04:05"}}_",
+      "mrkdwn_in": [ "text" ],
+      {{if eq .Event.Status "start"}}
+      "color": "good"
+      {{else if eq .Event.Status "die" "kill" "destroy"}}
+      "color": "danger"
+      {{else}}
+      "color": "warning"
+      {{end}}
+    }
+  ]
+}
