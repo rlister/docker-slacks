@@ -34,6 +34,15 @@ docker run \
   rlister/docker-slacks
 ```
 
+## Ignore list
+
+Set the environment variable `IGNORE` to a comma-separated list of
+repos (e.g. `IGNORE=busybox,rlister/docker-slacks`). Container events from
+these repos will be ignored.
+
+This is useful to avoid spam from timer units and other monitoring
+cruft, so you can concentrate on application containers.
+
 ## Docker API
 
 ## Slack message templates

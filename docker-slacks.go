@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"text/template"
 	"time"
@@ -69,6 +70,15 @@ func setupCallback() func(*dockerclient.Event, chan error, ...interface{}) {
 	tmpl, err := template.ParseFiles(template_file)
 	check(err)
 
+	// get ignore list as csv
+	ignore_list := make(map[string]bool)
+	ignore := os.Getenv("IGNORE")
+	if ignore != "" {
+		for _, name := range strings.Split(ignore, ",") {
+			ignore_list[name] = true
+		}
+	}
+
 	// format json from template and send to slack
 	return func(event *dockerclient.Event, ec chan error, args ...interface{}) {
 		fmt.Printf("%+v\n", *event) // log to stdout
@@ -79,9 +89,12 @@ func setupCallback() func(*dockerclient.Event, chan error, ...interface{}) {
 			Event:     event,
 		}
 
-		var output bytes.Buffer      // will contain output to send
-		tmpl.Execute(&output, &data) // format json from template
-		postToSlack(output.String()) // send json
+		repo := strings.Split(event.From, ":")[0] // repo name without tag
+		if !ignore_list[repo] {
+			var output bytes.Buffer      // will contain output to send
+			tmpl.Execute(&output, &data) // format json from template
+			postToSlack(output.String()) // send json
+		}
 	}
 }
 
