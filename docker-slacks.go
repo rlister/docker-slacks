@@ -52,7 +52,7 @@ func setupPostToSlack(webhook string) func(string) {
 }
 
 // return closure for handling docker events
-func setupCallback(filename string) func(*dockerclient.Event, chan error, ...interface{}) {
+func setupCallback() func(*dockerclient.Event, chan error, ...interface{}) {
 
 	// hostname to report
 	hostname, err := os.Hostname()
@@ -62,7 +62,11 @@ func setupCallback(filename string) func(*dockerclient.Event, chan error, ...int
 	postToSlack := setupPostToSlack(os.Getenv("WEBHOOK"))
 
 	// load a template from file
-	tmpl, err := template.ParseFiles(filename)
+	template_file := os.Getenv("TEMPLATE_FILE")
+	if template_file == "" {
+		template_file = "default.json"
+	}
+	tmpl, err := template.ParseFiles(template_file)
 	check(err)
 
 	// format json from template and send to slack
@@ -83,12 +87,6 @@ func setupCallback(filename string) func(*dockerclient.Event, chan error, ...int
 
 func main() {
 
-	// set file to load json template
-	template_file := os.Getenv("TEMPLATE_FILE")
-	if template_file == "" {
-		template_file = "default.json"
-	}
-
 	// can listen on given http url, or default to unix socket
 	host := os.Getenv("DOCKER_HOST")
 	if host == "" {
@@ -100,8 +98,7 @@ func main() {
 	check(err)
 
 	// listen to events
-	callback := setupCallback(template_file)
-	docker.StartMonitorEvents(callback, nil)
+	docker.StartMonitorEvents(setupCallback(), nil)
 
 	// wait forever
 	waitForInterrupt()
